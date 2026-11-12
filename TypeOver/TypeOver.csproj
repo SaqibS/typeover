@@ -9,4 +9,7 @@
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
   </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="TypeOver.Tests" />
+  </ItemGroup>
 </Project>

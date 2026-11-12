@@ -38,6 +38,7 @@ sealed class BleKeyboard : IDisposable
 
     GattServiceProvider? _provider;
     GattLocalCharacteristic? _input;
+    readonly SemaphoreSlim _sendLock = new(1, 1);
 
     public event Action? ConnectionChanged;
     public event Action<string>? StatusChanged;
@@ -77,7 +78,41 @@ sealed class BleKeyboard : IDisposable
         });
     }
 
-    public void Send(byte[] report) => _ = _input?.NotifyValueAsync(report.AsBuffer());
+    public async void Send(byte[] report)
+    {
+        try
+        {
+            await SendAsync(report);
+        }
+        catch (Exception ex)
+        {
+            StatusChanged?.Invoke($"Could not send keys: {ex.Message}");
+        }
+    }
+
+    public async Task SendAsync(byte[] report)
+    {
+        await _sendLock.WaitAsync();
+        try
+        {
+            if (_input is null || !HasSubscriber)
+                throw new InvalidOperationException("Phone disconnected.");
+
+            var results = await _input.NotifyValueAsync(report.AsBuffer());
+            if (results.Count == 0)
+                throw new InvalidOperationException("Phone disconnected.");
+
+            foreach (var result in results)
+            {
+                if (result.Status != GattCommunicationStatus.Success)
+                    throw new InvalidOperationException($"Bluetooth notification: {result.Status}");
+            }
+        }
+        finally
+        {
+            _sendLock.Release();
+        }
+    }
 
     async Task<GattLocalCharacteristic> CharacteristicAsync(
         ushort uuid, GattCharacteristicProperties properties, byte[]? staticValue = null)
