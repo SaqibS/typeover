@@ -50,7 +50,7 @@ Using TypeOver? I'd love to hear how it's working for you. Email [me@saqibshaikh
 
 TypeOver is built in C# with .NET and WPF. It uses the Windows GATT APIs to advertise a Bluetooth Low Energy HID keyboard and send key presses and releases as HID reports. The phone uses its built-in Bluetooth keyboard support, so no companion app is needed.
 
-To build and run from source, install the .NET 10 SDK on Windows, clone this repository, and run:
+To build and run from source, install the .NET 11 SDK on Windows, clone this repository, and run:
 
 ```powershell
 cd TypeOver
@@ -65,3 +65,11 @@ dotnet test
 ```
 
 The tests use an in-memory sender. They do not access Bluetooth or send keys to a phone.
+
+Publish a release from the `TypeOver` directory:
+
+```powershell
+dotnet publish --arch x64 -p:Version=<version>
+```
+
+Replace `<version>` with the release version.
